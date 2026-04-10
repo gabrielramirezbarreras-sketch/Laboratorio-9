@@ -1,376 +1,185 @@
-Practica 1: Instalacion de Webmin. 
+Practica 1: Instalacion y acceso a webmin
+Paso 1: Actualizar el sistema.
 sudo apt update
-wget http://prdownloads.sourceforge.net/webadmin/webmin_2.105_all.deb
-sudo apt install perl libnet-ssleay-perl libauthen-pam-perl libio-pty-perl apt-show-versions -y
-sudo dpkg -i webmin_2.105_all.deb
-https://localhost:10000 o https://IP-DEL-SERVIDOR:10000
 
-Funciones de administración en Webmin (capturas o descripción)
-1. Administración de usuarios
-Sistema > Users and Groups > Create a new user
+Paso 2: Instalar dependencias.
+sudo apt install wget apt-transport-https software-properties-common -y
 
-Verificar la creación del usuario en la lista de usuarios
+Paso 3: Descargar Webmin.
+wget https://www.webmin.com/download/deb/webmin-current.deb
 
-cut -d: -f1 /etc/passwd
+Paso 4: Instalar Webmin.
+sudo dpkg -i webmin-current.deb
 
-verificar el usuario 
+Si hay errores de dependencias:
+sudo apt --fix-broken install -y
 
-getent passwd michelle
+Acceso a Webmin:
+https://localhost:10000
 
-borramos el usuario
+Credenciales:
+Usuario: tu usuario de Linux
+Contraseña: tu contraseña
 
-2. Gestión de servicios
-System > bootup and shutdown
+Opciones de administración en Webmin.
 
-verificamos el servicio a ver si esta activo
+1 Administración de usuarios
 
-bash
-sudo systemctl status ssh
+Ruta en Webmin:
+System → Users and Groups
 
-desactivamos 
+Crear usuario
+Click en Create a new user
+Llenar:
+Username
+Password
+Click en Create
 
-reiniciamos
+Eliminar usuario
+Seleccionar usuario
+Click en Delete
 
-3. Configuración de red
-***Asignar una IP estática a una interfaz***
-Ir al módulo de configuración de red
+2 Gestión de servicios.
 
-En el menú izquierdo:
+Ruta:
+System → Bootup and Shutdown
 
-Networking → Network Configuration → Network Interfaces
+Iniciar servicio
+Buscar ssh
+Click en Start
 
-Seleccionar la interfaz
-Ejemplo:
-eth0
-ens33
-ens160
+Detener servicio
+Click en Stop
 
-Configurar IP estática
+Reiniciar servicio
+Click en Restart
 
-Dentro de la interfaz seleccionada:
-Cambia "Type" a "Static".
+3 Configuración de red.
+Ruta:
+Networking → Network Configuration
 
-Coloca la IP estática:
-Address: 192.168.1.20 (ejemplo)
+Pasos:
+Ir a Network Interfaces
+
+Seleccionar interfaz
+
+Cambiar a:
+Static configuration
+
+Configurar:
+IPv4 Address / Configuration
+Address: 192.168.1.100
 Netmask: 255.255.255.0
-Broadcast: 192.168.1.255 (opcional)
-Configura Gateway: 192.168.1.1 (ejemplo)
-
+Gateway: 192.168.1.1
+Broadcast: 192.168.1.255
 Guardar cambios
 
-Haz clic en:
-Save and Apply
+4 Administración de software
 
-***Configurar DNS***
-Ir al módulo DNS
+Ruta:
+System → Software Packages
 
-En el menú:
-Networking → Network Configuration → Hostname and DNS Client
+Actualizar paquetes.
+Click en Update Installed Packages
 
-En DNS Servers, coloca por ejemplo:
-8.8.8.8
-8.8.4.4
+Instalar software
+Buscar paquete (ej: openssh-server)
+Click en Install
 
-Guardar
+Eliminar software
+Buscar paquete instalado
+Click en Remove
 
-Presiona:
-Save and Apply
+5 Gestión de archivos y directorios
 
-***Cambiar el hostname***
-Abrir el módulo
+Ruta:
+Tools → File Manager
 
-En Webmin:
-Networking → Network Configuration → Hostname and DNS Client
+Explorar archivos
+Navegar como un explorador normal
 
-Cambiar el hostname
+Editar archivo
+Seleccionar archivo
+Click en Edit
 
-En el campo:
-"Hostname"
+Eliminar archivo
+Seleccionar archivo
+Click en Delete
 
-Escribe uno nuevo, ejemplo:
-server-ansible
+6 Monitorización del sistema
 
-Guardar
+Ruta:
+Dashboard
 
-Clic en:
-Save and Apply
-
-4. Administracion de software
-System > Software Packages
-
-Instalar un paquete (seccion From APT)
-
-htop
-
-Actualizamos 
-**esde Webmin (para todo):**
-
-Ve a `System > Software Package Updates`
-    
-Haz clic en **Update selected packages** o **Update all packages**
-
-desinstalar
-
-software package
-
-search for package
-
-y verificamos la terminal con 
-
-dpkg -l | grep htop
-
-dashboard
-
-Practica 2: Desplieque de una VM con terraform en digital Ocean.
-actualizamos los paquetes
-
-sudo apt install -y gnupg software-properties-common curl
-
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-sudo apt update && sudo apt install -y gnupg software-properties-common curl
-sudo apt-add-repository "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-
+Practica 3: Instalación de Ansible.
+Instalar Ansible:
 sudo apt update
-sudo apt install terraform -y
+sudo apt install ansible -y
 
-terraform -v
+Verifica:
+ansible --version
 
-ssh-keygen -t rsa -b 4096 -C
+Instalar dependencias necesarias:
+sudo apt install sshpass openssh-client -y
 
-cat ~/.ssh/id_rsa.pub
+Crear usuario "ansible" (en el controller):
+sudo adduser ansible
 
-Digital Ocean:
-Crear Clave SSH(settings > security) ponemos lo que nos genero el keygen en la terminal 
+Agregar a sudoers:
+sudo usermod -aG sudo ansible
 
-96:77:1f:2e:6f:6d:32:f0:4f:5d:b7:82:9c:3b:d9:5a
+Cambiar a ese usuario:
+su - ansible
 
-dop_v1_16527850af1fafcf909422263af1e1929674c36bc62cb798a8f49f0b50b54387
+Configurar acceso SSH sin contraseña:
+ssh-keygen -t rsa -b 2048
 
-Volvemos a la terminal 
+Copiar clave:
 
-creamos el archivo main.tf
+ssh-copy-id ansible@192.168.140.129
 
-sudo nano main.tf
+Crear usuario ansible también:
+sudo adduser ansible
+sudo usermod -aG sudo ansible
 
-terraform {
-  required_providers {
-    digitalocean = {
-      source = "digitalocean/digitalocean"
-    }
-  }
-}
-
-provider "digitalocean" {
-  token = "d"
-}
-
-resource "digitalocean_droplet" "os3vm" {
-  name   = "OS3vm"
-  image  = "ubuntu-22-04-x64"
-  region = "nyc1"
-  size   = "s-1vcpu-1gb"
-
-  # Usar la llave SSH pública proporcionada para acceso
-  ssh_keys = [""]
-
-  tags = ["OS3vm"]
-}
-
-output "ip_address" {
-  value = digitalocean_droplet.os3vm.ipv4_address
-}
-
-terraform init
-
-Planificar el despliegue para que todo este bien configurado
-
-terraform plan
-
-Aplicar el despliegue
-
-terraform apply
-
-para acceder a la vm 
-
-ssh root@ipdelamaquina
-
-Practica 3: Instalación de Ansible
-Vm-server
-
-sudo apt update && sudo apt install ansible -y
-
+Crear Directorio:
 sudo mkdir -p /etc/ansible
-cd /etc/ansible
 
-[defaults]
-inventory = /etc/ansible/hosts 
-private_key_file = /home/ansible/.ssh/id_rsa hosts_key_checking = False 
-ask_become_pass = True
+Editar:
+sudo nano /etc/ansible/hosts
 
-[ssh_connection]
-ssh_args = -o ForwardAgent=yes -o ControlMaster=auto -o ControlPersist=60s
+Agregar:
+[linux]
+linux1 ansible_host=192.168.140.129 ansible_user=ansible
 
-[win] 
-192.168.100.45
+[win]
+windows1 ansible_host=192.168.140.1 ansible_user=ansible ansible_connection=ssh
 
-[win:vars] 
-ansible_user=ansible 
-ansible_password=1234
-ansible_port=5985 
-ansible_connection=winrm 
-ansible_winrm_transport=basic ansible_winrm_server_cert_validation=ignore 
-
-[linux] 
-
-[linux:vars] ansible_user=ansible 
-ansible_ssh_private_key_file=~/.ssh/id_rsa 
-ansible_become_password=1234
-
-ssh-keygen -t rsa -b 4096
-
-cd ~/.ssh
-ls
-
-cat id_rsa.pub
-
-Accedemos a la VM-Digital Ocean
-
-Vamos a crear el usuario
-
-adduser ansible
-
-lo agregamos al siguiente grupo
-
-usermod -aG sudo ansible
-
-chsh -s /bin/bash ansible
-
-Accedemos al usuario
-su ansible
-
-mkdir ~/.ssh
-nano ~/.ssh/authorized_keys
-
-chmod 600 ~/.ssh/authorized_keys
-
-ansible linux -m ping -u ansible
-
-En la maquina windows desactivamos el firewall 
-
-Ingresamos a powershell en modo administrador
-
-Set-ExecutionPolicy RemoteSigned -Force
-Enable-PSRemoting -Force
-Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
-Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force
-netsh advfirewall firewall add rule name="WinRM HTTP" dir=in action=allow protocol=TCP localport=5985
-netsh advfirewall firewall set rule group="Administración remota de Windows" new enable=yes
-Restart-Service WinRM
-$Password = ConvertTo-SecureString "1234" -AsPlainText -Force
-New-LocalUser -Name "ansible" -Password $Password -FullName "Ansible User" -Description "Usuario para Ansible"
-Add-LocalGroupMember -Group "Administradores" -Member "ansible"
-winrm enumerate winrm/config/listener
-Test-NetConnection -ComputerName localhost -Port 5985
-
-ansible win -m win_ping
+Probar conexión con ping:
+ansible linux -m ping
 
 Practica 4: Comandos Ad-Hoc.
-ansible win -i /etc/ansible/hosts -m win_shell -a "Move-Item -Path 'C:/Users/michelita/Desktop/michele.txt' -Destination 'C:/Users/michelita/Documents/'"
+Crear Direcotrio:
+mkdir -p /home/ansible/Desktop
 
-Reiniciar la maquia digital ocean
+Poner informacion:
+echo "Prueba Ansible" > ~/Desktop/archivo.txt
 
-ansible linux -i /etc/ansible/hosts -m reboot --become
+Verifica que existe:
+ls ~/Desktop/archivo.txt
 
-Practica 5: Playbooks.
-Vamos a nuestra maquina windows y verificamos que no esta notepad
+Créalo de nuevo correctamente
+nano /home/ansible/hosts
 
-En Linux
+PEGA:
+[linux]
+linux1 ansible_host=192.168.140.129 ansible_user=ansible
 
+Prueba inventario:
+ansible-inventory -i /home/ansible/hosts --list
 
-sudo nano install_notepad.yml
+Comando correcto:
+ansible linux -i /home/ansible/hosts -m ping -u ansible --ask-pass
 
-
-pegamos 
-
- name: Descargar e instalar Notepad++ en Windows
-  hosts: win
-  tasks:
-     name: Descargar instalador de Notepad++
-      win_get_url:
-        url: https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.5.3/npp.8.5.3.Installer.x64.exe
-        dest: C:\Users\michelita\Downloads\npp_installer.exe
-
-     name: Ejecutar el instalador de Notepad++
-      win_package:
-        path: C:\Users\michelita\Downloads\npp_installer.exe
-        arguments: /S
-        state: present
-
-     name: Verificar si Notepad++ está instalado
-      win_stat:
-        path: C:\Program Files\Notepad++\notepad++.exe
-      register: resultado_npp
-
-     name: Confirmar instalación exitosa
-      debug:
-        msg: "Notepad++ está instalado correctamente."
-      when: resultado_npp.stat.exists
-
-ejecutarlo 
-
-ansible-playbook install_notepad.yml
-
-Accedemos a notepad
-
-el siguiente playbook
-
-
-sudo nano actualizar_repositorios.yml
-
-
-
- name: Actualizar los repositorios del sistema
-  hosts: linux
-  become: yes
-  tasks:
-     name: Actualizar la lista de paquetes
-      apt:
-        update_cache: yes
-      register: resultado
-
-     name: Mostrar resultado de la actualización
-      debug:
-        var: resultado
-
-
-name: Crear usuario y configurar en Windows
-  hosts: windows
-  gather_facts: no
-  tasks:
-    - name: Crear nuevo usuario
-      ansible.windows.win_user:
-        name: nuevo_usuario
-        password: "ContraseñaSegura123!"
-        state: present
-        groups:
-          - Administradores
-        update_password: on_create
-        password_never_expires: yes
-        user_cannot_change_password: no
-
-    - name: Descargar instalador de Notepad++
-      ansible.windows.win_get_url:
-        url: https://github.com/notepad-plus-plus/notepad-plus-plus/releases/latest/download/npp.8.6.3.Installer.x64.exe
-        dest: C:\Temp\npp_installer.exe
-
-    - name: Instalar Notepad++
-      ansible.windows.win_package:
-        path: C:\Temp\npp_installer.exe
-        arguments: /S
-        state: present
-
-para hacerlo 
-
-ansible-playbook actualizar_repositorios.yml
+Reiniciar la VM con reboot:
+ansible linux -i ./hosts -m reboot -b -K
