@@ -111,6 +111,61 @@ Click en Delete
 Ruta:
 Dashboard
 
+Practica 2 Desplieque de una VM con terraform en digital Ocean.
+sudo apt update && sudo apt install -y gnupg software-properties-common curl
+
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+
+sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+
+sudo apt update && sudo apt install terraform -y
+
+terraform -version
+
+sudo apt install awscli -y
+
+aws configure
+
+Te pedirá:
+
+AWS Access Key
+AWS Secret Key
+Región (ejemplo: us-east-1)
+Output format: json
+
+sudo nano main.tf
+
+Configuración básica:
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "ansible-key"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
+resource "aws_instance" "OS3vm" {
+  ami           = "ami-0c02fb55956c7d316" # Ubuntu 22.04 (puede cambiar según región)
+  instance_type = "t2.micro"
+
+  key_name = aws_key_pair.deployer.key_name
+
+  tags = {
+    Name = "OS3vm"
+  }
+}
+
+terraform init
+
+terraform validate
+
+terraform plan
+
+terraform apply
+
+terraform show
+
 Practica 3: Instalación de Ansible.
 Instalar Ansible:
 sudo apt update
@@ -183,3 +238,83 @@ ansible linux -i /home/ansible/hosts -m ping -u ansible --ask-pass
 
 Reiniciar la VM con reboot:
 ansible linux -i ./hosts -m reboot -b -K
+
+Practica 5: Playbooks:
+sudo nano instalar_notepad.yml
+
+Contenido:
+- name: Instalar Notepad++ en Windows
+  hosts: windows
+  gather_facts: no
+
+  tasks:
+    - name: Instalar Notepad++ usando Chocolatey
+      win_chocolatey:
+        name: notepadplusplus
+        state: present
+
+Ejecuta en PowerShell como administrador:
+
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+Inventario ejemplo:
+sudo nano hosts
+
+[windows]
+192.168.1.50
+
+[windows:vars]
+ansible_user=usuario
+ansible_password=tu_password
+ansible_connection=winrm
+ansible_winrm_transport=basic
+ansible_winrm_server_cert_validation=ignore
+
+Ejecutar:
+ansible-playbook -i hosts instalar_notepad.yml
+
+Playbook para instalar NGINX:
+nano instalar_nginx.yml
+
+Crear archivo:
+sudo nano instalar_nginx.yml
+
+Contenido:
+- name: Instalar y levantar NGINX
+  hosts: linux
+  become: yes
+
+  tasks:
+    - name: Actualizar repositorios
+      apt:
+        update_cache: yes
+
+    - name: Instalar NGINX
+      apt:
+        name: nginx
+        state: present
+
+    - name: Iniciar servicio NGINX
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+Inventario:
+[linux]
+localhost ansible_connection=local
+
+Ejecutar:
+ansible-playbook -i hosts instalar_nginx.yml
+
+Validación:
+systemctl status nginx
+
+O en navegador:
+
+http://localhost
+
+Busca Notepad++ en el menú inicio o ejecuta:
+notepad++
